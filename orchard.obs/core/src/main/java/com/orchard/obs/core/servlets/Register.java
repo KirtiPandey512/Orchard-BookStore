@@ -14,6 +14,7 @@ import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.orchard.obs.Exceptions.serviceExceptions.CustomerServiceExceptions;
 import com.orchard.obs.core.models.Customer;
 import com.orchard.obs.core.services.RegistrationServices;
 
@@ -40,56 +41,67 @@ public class Register extends SlingAllMethodsServlet {
 	@Override
 	protected void doPost(SlingHttpServletRequest request,SlingHttpServletResponse response) throws IOException, ServletException {
 		//response.setContentType("text/plain");
-		PrintWriter out=response.getWriter();
 		logger.info("within servlet");
 		Customer customer=new Customer();
 		String idString=request.getParameter("uname");
-		response.getWriter().println(idString);
+		//response.getWriter().println(idString);
 		customer.setId(idString);
 		String name = request.getParameter("name");
-		response.getWriter().println(name);
+		//response.getWriter().println(name);
 		customer.setName(name);
 		String password=request.getParameter("password");
-		response.getWriter().println(password);
+		//response.getWriter().println(password);
 		customer.setPassword(password);
 		String dob=request.getParameter("dob");
-		response.getWriter().println(dob);
+		//response.getWriter().println(dob);
 		customer.setDob(dob);
 		String country=request.getParameter("country");
-		response.getWriter().println(country);
+		//response.getWriter().println(country);
 		customer.setCountry(country);
 		String state=request.getParameter("state");
-		response.getWriter().println(state);
+		//response.getWriter().println(state);
 		customer.setState(state);
 		String city=request.getParameter("city");
-		response.getWriter().println(city);
+		//response.getWriter().println(city);
 		customer.setCity(city);
 		String address=request.getParameter("address");
-		response.getWriter().println(address);
+		//response.getWriter().println(address);
 		customer.setAddress(address);
 		String pin=request.getParameter("pin");
-		response.getWriter().println(pin);
+		//response.getWriter().println(pin);
 		customer.setPin(pin);
 		String gender=request.getParameter("gender");
-		response.getWriter().println(gender);
+		//response.getWriter().println(gender);
 		customer.setGender(gender);
 		String phone=request.getParameter("phone");
-		response.getWriter().println(phone);
+		//response.getWriter().println(phone);
 		customer.setPhone(phone);
 		String mail=request.getParameter("mail");
-		response.getWriter().println(mail);
+		//response.getWriter().println(mail);
 		customer.setMail(mail);
-		boolean set=false;
+		boolean check=false;
 		try {
-			set=registrationServices.registerUser("obs", customer);			
-		} catch (Exception e) {
-			response.getWriter().println(e.getMessage());
+			check=registrationServices.checkDuplicateMail("obs",mail);
+		} catch (CustomerServiceExceptions e1) {
+			// TODO Auto-generated catch block
+			response.getWriter().println(e1.getMessage());
 		}
-		if(set) {
-			response.getWriter().println("<script>alert('Registered');</script>");
+		boolean set=false;
+		if(!check) {
+			try {
+				set=registrationServices.registerUser("obs", customer);			
+			} catch (Exception e) {
+				response.getWriter().println(e.getMessage());
+			}
+			if(set) {
+				response.getWriter().println("Registered");
+			}
+			else {
+				response.getWriter().println("An account with this Username already exists");			
+			}
 		}
 		else {
-			response.getWriter().println("<script>alert('An account with this Username/Mail already exists');</script>");			
+			response.getWriter().println("An account with this Mail already exists");
 		}
 	}
 	
