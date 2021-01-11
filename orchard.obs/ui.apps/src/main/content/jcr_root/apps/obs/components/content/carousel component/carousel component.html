@@ -21,21 +21,21 @@
   <!-- Wrapper for slides -->
   <div class="carousel-inner">
     <div class="item active">
-      <a href="${carousel.slideOneLink}"> <img src="${carousel.slideOneImage}" alt="Book"></a>
+      <a href="${carousel.slideOneLink}"> <img src="${carousel.slideOneImage}" alt="Book" class="carousel-image"></a>
       <div class="carousel-caption">
          <p style="font: italic bold 35px/40px Georgia,serif;">${carousel.slideOneText}</p> 
       </div>
     </div>
 
     <div class="item">
-     <a href="${carousel.slideTwoLink}" ><img src="${carousel.slideTwoImage}" alt="Book"></a>
+     <a href="${carousel.slideTwoLink}" ><img src="${carousel.slideTwoImage}" alt="Book" class="carousel-image"></a>
       <div class="carousel-caption">
         <p style="font: italic bold 35px/40px Georgia,serif;">${carousel.slideTwoText}</p>
       </div>
     </div>
 
   <div class="item">
-      <a href="${carousel.slideThreeLink}"> <img src="${carousel.slideThreeImage}" alt="Book"></a>
+      <a href="${carousel.slideThreeLink}"> <img src="${carousel.slideThreeImage}" alt="Book" class="carousel-image"></a>
       <div class="carousel-caption">
         <p style="font: italic bold 35px/40px Georgia,serif;">${carousel.slideThreeText}</p>
       </div>
@@ -55,3 +55,17 @@
 </div>
 </body>
 </html>
+
+ 
+<style>
+#myCarousel {
+    width: 90%; 
+    height: 400px;
+    margin: auto;
+}
+
+.carousel-image {
+    width: 100% !important; 
+    height: 400px !important;
+}
+</style>

@@ -1,281 +1,15 @@
 <!--sly data-sly-use.clientlib="/libs/granite/sightly/templates/clientlib.html"
 data-sly-call="${clientlib.all @ categories='obs.base'}"/-->
 
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-<script>
-$.fn.fetchCartData = function(customerId) {
-	$.ajax({
-		url: '/bin/obs/cartservlet',
-		type: 'POST',
-        data: {
-        	customerId: customerId,
-            action: "getcartdata"
-        },
-		complete: function(xhr, status) {
-        	if (status == "success") {
-            	alert(xhr.responseText);
-            	cartData = JSON.parse(xhr.responseText);
-                $(this).loadCartData(cartData, customerId);
-            }
-            else {
-            	$("#cart-message-block").show();
-                $("#cart-message-block").css("background-color", "red");
-            	$("#message").text("something went wrong");
-          	}
-		}
-	});
-}
-
-$.fn.updateCartData = function(index, quantity, customerId) {
-	$.ajax({
-		url: '/bin/obs/cartservlet',
-		type: 'POST',
-		data: {
-			bookId: (cartData[index].book).id,
-            quantity: quantity,
-            customerId: customerId,
-            action: "updatecartdata"
-		},
-		complete: function(xhr, status) {
-        	if (status == "success") {
-            	if(xhr.responseText > 0) {
-                	cartData[index].cartQuantity = quantity;
-                    $(this).loadCartData(cartData, customerId);
-                }
-            }
-            else {
-            	$("#cart-message-block").show();
-                $("#cart-message-block").css("background-color", "red");
-            	$("#message").text("something went wrong");
-          	}
-		}
-	});
-}
-
-$.fn.addToWishlist = function(index, customerId) {
-	var obj = this;
-    	if($(this).text() == "ADD TO WISHLIST") {
-			$.ajax({
-				url: '/bin/obs/cartservlet',
-				type: 'POST',
-				data: {
-					bookId: (cartData[index].book).id,
-            		customerId: customerId,
-            		action: "addtowishlist"
-				},
-				complete: function(xhr, status) {
-        			if (status == "success") {
-            			if(xhr.responseText > 0) {
-                			$("#cart-message-block").show();
-        					$("#cart-message-block").css("background-color", "green");
-        					$("#message").text("Successfully Saved To Wishlist");
-                        	$(obj).text("GO TO WISHLIST");
-                		}
-                    	else {
-                    		$("#cart-message-block").show();
-                			$("#cart-message-block").css("background-color", "red");
-            				$("#message").text("Failed To Add Book To Wishlist");
-                		}
-           			}
-            		else {
-            			$("#cart-message-block").show();
-                		$("#cart-message-block").css("background-color", "red");
-            			$("#message").text("something went wrong");
-          			}
-				}
-			});
-    	} else {
-		window.location = "wishlist.html";
-   	}
-}
-
-$.fn.removeCartItem = function(index, customerId) {
-	$.ajax({
-		url: '/bin/obs/cartservlet',
-		type: 'POST',
-		data: {
-			bookId: (cartData[index].book).id,
-            customerId: customerId,
-            action: "removecartitem"
-		},
-		complete: function(xhr, status) {
-        	if (status == "success") {
-            	if(xhr.responseText > 0) {
-					cartData.splice(index, 1);
-                    if(cartData.length != 0)
-                    	$(this).loadCartData(cartData, customerId);
-                   	else
-                    	$("#myModal").hide();
-                }
-            }
-            else {
-            	$("#cart-message-block").show();
-                $("#cart-message-block").css("background-color", "red");
-            	$("#message").text("something went wrong");
-          	}
-		}
-	});
-}
-
-$.fn.loadCartData = function(cartData, customerId) {
-   	$("#cartmodal-block").remove();
-	if(cartData.length != 0) {
-        $(".modal").css("display", "block");
-        var totalPrice = 0, totalDiscount = 0, deliveryCharge = 0, totalAmount = 0, totalAmountSaved = 0;
-        var cartBlock = [
-           	'<div id="cartmodal-block">',
-                '<div id="cartmodal-block-first-block">',
-                    '<div id="header">',
-                        '<div id="label">My Cart (' + cartData.length + ')</div>',
-                    '</div>',
-                '</div>',
-            '</div>'
-		].join("\n");
-		$(".modal-content").append(cartBlock);
-
-		$.each(cartData, function(index, item) {
-        	book = item.book;
-			discountPrice = (((100-book.discount)/100)*book.price*item.cartQuantity);
-            actualPrice = (book.price*item.cartQuantity);
-            totalPrice += actualPrice;
-            totalDiscount += (book.discount*book.price*item.cartQuantity/100);
-
-			var Item_Block = [
-				'<div class="item-block">',
-                	'<div class="item-block-first-div">',
-                    	'<div class="item-image-block">',
-                        	'<img src="/content/dam/obs/en/images/books/' + book.name + '.jpg">',
-                        '</div>',
-                        '<div class="item-detail-block">',
-                        	'<div class="item-name">' + book.name + '</div>',
-                            '<div class="language">' + book.language + '</div>',
-                            '<div class="item-price">',
-                           		'<div class="discount-price">₹' + discountPrice + '</div>',
-                                '<div class="actual-price"><s>₹' + actualPrice + '</s></div>',
-                                '<div class="discount">' + book.discount + '% Off</div>',
-                            '</div>',
-                        '</div>',
-                        '<div class="delivery-detail-block">',
-                        	'<div class="delivery-detail">Delivery in 3 - 5 days | ₹66</div>',
-                            '<div class="replacement-policy">7 Days Replacement Policy</div>',
-                        '</div>',
-                    '</div>',
-                    '<div class="item-block-second-div">',
-                    	'<div class="item-quantity-block">',
-                        	'<button class="minus" id="m' + index + '" onclick="$(this).updateCartData(' + index + ',' + (item.cartQuantity-1) + ',\'' + customerId + '\');"> - </button>',
-                            '<input class="item-count" id="q' + index + '" type="number" min="1" onkeypress="return event.keyCode > 48 && event.keyCode < 57" value=' + item.cartQuantity + '>',
-                            '<button class="plus" id="p' + index + '" onclick="$(this).updateCartData(' + index + ',' + (item.cartQuantity+1) + ',\'' + customerId + '\');"> + </button>',
-                        '</div>',
-                        '<div class="item-save-remove">',
-                        	'<div class="item-save-later" id=atc' + index + ' onclick="$(this).addToWishlist(' + index + ',\'' + customerId + '\')">ADD TO WISHLIST</div>',
-                            '<div class="item-remove" onclick="$(this).removeCartItem(' + index + ',\'' + customerId + '\')">REMOVE</div>',
-                        '</div>',
-                    '</div>',
-               	'</div>'
-			].join("\n");
-            $("#cartmodal-block-first-block").append(Item_Block);
-
-            if(item.cartQuantity > 1) {
-            	$("#m"+index).prop("disabled", false);
-            }
-            else {
-            	$("#m"+index).prop("disabled", true);
-            }
-
-            if(book.discount == 0) {
-            	$(".discount").hide();
-                $(".actual-price").hide();
-            }
-
-            if(book.isPresentInCart) {
-                $("#atc" + index).text("GO TO WISHLIST");
-           	}
-		});
-
-		var Place_Order_Block = [
-            '<div class="place-order-block">',
-                '<button onclick="$(this).placeOrder(\'' + customerId + '\');">PLACE ORDER</button>',
-            '</div>'
-        ].join("\n");
-		$("#cartmodal-block-first-block").append(Place_Order_Block);
-
-        var Price_Details_Block = [
-        	'<div id="price-details-block">',
-               	'<div id="price-details-block-first-div">',
-                    '<label>PRICE DETAILS</label>',
-               	'</div>',
-               	'<div id="price-details-block-second-div">',
-                   	'<div id="price-div">',
-                        '<div id="price-div-left">Price (item ' + cartData.length + ')</div>',
-                        '<div id="price-div-right">₹' + totalPrice + '</div>',
-                    '</div>',
-                    '<div id="discount-div">',
-                        '<div id="discount-div-left">Discount</div>',
-                        '<div id="discount-div-right">₹' + totalDiscount + '</div>',
-                    '</div>',
-                    '<div id="delivery-charges-div">',
-                        '<div id="delivery-charges-div-left">Delivery Charge</div>',
-                        '<div id="delivery-charges-div-right">₹' + deliveryCharge + '</div>',
-                    '</div>',
-                    '<div id="total-amount-div">',
-                        '<div id="total-amount-div-left">Amount</div>',
-                        '<div id="total-amount-div-right">₹' + (totalPrice-totalDiscount+deliveryCharge) + '</div>',
-                    '</div>',
-                    '<div id="saved-amount">',
-                        '<div>You will save ₹' + (totalDiscount-deliveryCharge) + ' on this order</div>',
-                    '</div>',
-               	'</div>',
-           	'</div>'
-        ].join("\n");
-        $("#cartmodal-block-first-block").append(Price_Details_Block);
-
-		if(totalPrice != 0) {
-        	if(totalDiscount == 0 || totalDiscount < deliveryCharge) {
-            	$("#discount-div").hide();
-            	$("#saved-amount").hide();
-        	}
-
-        	if(deliveryCharge == 0) {
-            	$("#delivery-charges-div-right").text("FREE");
-        	}
-        }
-        else {
-            $("#item-block-second-div").hide();
-            $("button").prop("disabled", true);
-            $("button").css("background-color", "grey");
-        }
-	}
-    else
-    	alert("Cart Is Empty!...");
-}
-
-$.fn.close = function() {
-    $("#myModal").hide();
-}
-
-$(window).click(function(e) {
-    if(e.target.id == "myModal") {
-    	$("#myModal").hide();
-    }
-});
-
-$.fn.placeOrder = function(customerId) {
-    window.location = "order.html?" + customerId;
-}
-
-$.fn.closeMessageBlock = function() {
-	$("#cart-message-block").hide();
-};
-</script>
 
 <!-- The Modal -->
 <div id="myModal" class="modal">
 	<!-- Modal content -->
     <div class="modal-content">
         <span class="close" onclick="$(this).close();">&times;</span>
-    	<div id="cart-message-block">
-			<span id="message"></span>
-			<span id="close" onclick="$(this).closeMessageBlock();">&times;</span>
+    	<div id="cartmodal-message-block">
+			<span id="cartmodal-message"></span>
+			<span id="cartmodal-message-block-close" onclick="$(this).closeCartModalMessageBlock();">&times;</span>
 		</div>
     </div>
 </div>
@@ -291,7 +25,7 @@ $.fn.closeMessageBlock = function() {
   width: 100%; /* Full width */
   height: 100%; /* Full height */
   padding-top: 100px;
-  overflow: auto; /* Enable scroll if needed */
+  overflow-y: hidden; /* Enable scroll if needed */
   background-color: rgb(0,0,0); /* Fallback color */
   background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
 }
@@ -307,7 +41,7 @@ $.fn.closeMessageBlock = function() {
   margin: auto;
 }
 
-#cart-message-block {
+#cartmodal-message-block {
 	display: none;
 	background-color: red;
    	padding: 1%;
@@ -316,12 +50,12 @@ $.fn.closeMessageBlock = function() {
     border-radius: 5px;
 }
 
-#message {
+#cartmodal-message {
 	color: white;
     font-size: 18px;
 }
 
-#close {
+#cartmodal-message-block-close {
 	float: right;
     color: white;
     font-size: 22px;
@@ -519,3 +253,274 @@ $.fn.closeMessageBlock = function() {
     border-top: 1px dashed grey;
 }
 </style>
+
+<script>
+$.fn.fetchCartModalData = function(customerId) {
+	$.ajax({
+		url: '/bin/obs/cartservlet',
+		type: 'POST',
+        data: {
+        	customerId: customerId,
+            action: "getcartdata"
+        },
+		complete: function(xhr, status) {
+        	if (status == "success") {
+            	cartData = JSON.parse(xhr.responseText);
+                $(this).loadCartModalData(cartData, customerId);
+            }
+            else {
+            	$("#cartmodal-message-block").show();
+                $("#cartmodal-message-block").css("background-color", "red");
+            	$("#cartmodal-message").text("something went wrong");
+          	}
+		}
+	});
+}
+
+$.fn.updateCartModalData = function(index, quantity, customerId) {
+	$.ajax({
+		url: '/bin/obs/cartservlet',
+		type: 'POST',
+		data: {
+			bookId: (cartData[index].book).id,
+            quantity: quantity,
+            customerId: customerId,
+            action: "updatecartdata"
+		},
+		complete: function(xhr, status) {
+        	if (status == "success") {
+            	if(xhr.responseText > 0) {
+                	cartData[index].cartQuantity = quantity;
+                    $(this).loadCartModalData(cartData, customerId);
+                }
+            }
+            else {
+            	$("#cartmodal-message-block").show();
+                $("#cartmodal-message-block").css("background-color", "red");
+            	$("#cartmodal-message").text("something went wrong");
+          	}
+		}
+	});
+}
+
+$.fn.addToWishlist = function(index, customerId) {
+	var obj = this;
+    	if($(this).text() == "ADD TO WISHLIST") {
+			$.ajax({
+				url: '/bin/obs/cartservlet',
+				type: 'POST',
+				data: {
+					bookId: (cartData[index].book).id,
+            		customerId: customerId,
+            		action: "addtowishlist"
+				},
+				complete: function(xhr, status) {
+        			if (status == "success") {
+            			if(xhr.responseText > 0) {
+                			$("#cartmodal-message-block").show();
+        					$("#cartmodal-message-block").css("background-color", "green");
+        					$("#cartmodal-message").text("Successfully Saved To Wishlist");
+                        	$(obj).text("GO TO WISHLIST");
+                		}
+                    	else {
+                    		$("#cartmodal-message-block").show();
+                			$("#cartmodal-message-block").css("background-color", "red");
+            				$("#cartmodal-message").text("Failed To Add Book To Wishlist");
+                		}
+           			}
+            		else {
+            			$("#cartmodal-message-block").show();
+                		$("#cartmodal-message-block").css("background-color", "red");
+            			$("#cartmodal-message").text("something went wrong");
+          			}
+				}
+			});
+    	} else {
+		 	window.location.href = "${currentPage.getPath @context='uri'}".substr(0, 18) + "/menu/mywishlist.html";
+   		}
+}
+
+$.fn.removeCartModalItem = function(index, customerId) {
+	$.ajax({
+		url: '/bin/obs/cartservlet',
+		type: 'POST',
+		data: {
+			bookId: (cartData[index].book).id,
+            customerId: customerId,
+            action: "removecartitem"
+		},
+		complete: function(xhr, status) {
+        	if (status == "success") {
+            	if(xhr.responseText > 0) {
+					cartData.splice(index, 1);
+                    $(this).loadCartModalData(cartData, customerId);
+                }
+            }
+            else {
+            	$("#cartmodal-message-block").show();
+                $("#cartmodal-message-block").css("background-color", "red");
+            	$("#cartmodal-message").text("something went wrong");
+          	}
+		}
+	});
+}
+
+$.fn.loadCartModalData = function(cartData, customerId) {
+   	$("#cartmodal-block").remove();
+	if(cartData.length != 0) {
+        $(".modal").css("display", "block");
+        $(".modal-content").css("height", "250px")
+        $("#cartmodal-message-block").hide();
+        var totalPrice = 0, totalDiscount = 0, deliveryCharge = 0, totalAmount = 0, totalAmountSaved = 0;
+        var cartBlock = [
+           	'<div id="cartmodal-block">',
+                '<div id="cartmodal-block-first-block">',
+                    '<div id="header">',
+                        '<div id="label">My Cart (' + cartData.length + ')</div>',
+                    '</div>',
+                '</div>',
+            '</div>'
+		].join("\n");
+		$(".modal-content").append(cartBlock);
+
+		$.each(cartData, function(index, item) {
+        	book = item.book;
+			discountPrice = (((100-book.discount)/100)*book.price*item.cartQuantity);
+            actualPrice = (book.price*item.cartQuantity);
+            totalPrice += actualPrice;
+            totalDiscount += (book.discount*book.price*item.cartQuantity/100);
+
+			var Item_Block = [
+				'<div class="item-block">',
+                	'<div class="item-block-first-div">',
+                    	'<div class="item-image-block">',
+                        	'<img src="/content/dam/obs/en/images/books/' + book.name + '.jpg">',
+                        '</div>',
+                        '<div class="item-detail-block">',
+                        	'<div class="item-name">' + book.name + '</div>',
+                            '<div class="language">' + book.language + '</div>',
+                            '<div class="item-price">',
+                           		'<div class="discount-price">₹' + discountPrice + '</div>',
+                                '<div class="actual-price"><s>₹' + actualPrice + '</s></div>',
+                                '<div class="discount">' + book.discount + '% Off</div>',
+                            '</div>',
+                        '</div>',
+                        '<div class="delivery-detail-block">',
+                        	'<div class="delivery-detail">Delivery in 3 - 5 days</div>',
+                            '<div class="replacement-policy">8 Days Replacement Policy</div>',
+                        '</div>',
+                    '</div>',
+                    '<div class="item-block-second-div">',
+                    	'<div class="item-quantity-block">',
+                        	'<button class="minus" id="m' + index + '" onclick="$(this).updateCartModalData(' + index + ',' + (item.cartQuantity-1) + ',\'' + customerId + '\');"> - </button>',
+                            '<input class="item-count" id="q' + index + '" type="number" min="1" onkeypress="return event.keyCode > 48 && event.keyCode < 57" value=' + item.cartQuantity + '>',
+                            '<button class="plus" id="p' + index + '" onclick="$(this).updateCartModalData(' + index + ',' + (item.cartQuantity+1) + ',\'' + customerId + '\');"> + </button>',
+                        '</div>',
+                        '<div class="item-save-remove">',
+                        	'<div class="item-save-later" id=atc' + index + ' onclick="$(this).addToWishlist(' + index + ',\'' + customerId + '\')">ADD TO WISHLIST</div>',
+                            '<div class="item-remove" onclick="$(this).removeCartModalItem(' + index + ',\'' + customerId + '\')">REMOVE</div>',
+                        '</div>',
+                    '</div>',
+               	'</div>'
+			].join("\n");
+            $("#cartmodal-block-first-block").append(Item_Block);
+
+            if(item.cartQuantity > 1) {
+            	$("#m"+index).prop("disabled", false);
+            }
+            else {
+            	$("#m"+index).prop("disabled", true);
+            }
+
+            if(book.discount == 0) {
+            	$(".discount").hide();
+                $(".actual-price").hide();
+            }
+
+            if(book.isPresentInWishlist) {
+                $("#atc" + index).text("GO TO WISHLIST");
+           	}
+		});
+
+		var Place_Order_Block = [
+            '<div class="place-order-block">',
+                '<button onclick="$(this).placeOrder(\'' + customerId + '\');">PLACE ORDER</button>',
+            '</div>'
+        ].join("\n");
+		$("#cartmodal-block-first-block").append(Place_Order_Block);
+
+        var Price_Details_Block = [
+        	'<div id="price-details-block">',
+               	'<div id="price-details-block-first-div">',
+                    '<label>PRICE DETAILS</label>',
+               	'</div>',
+               	'<div id="price-details-block-second-div">',
+                   	'<div id="price-div">',
+                        '<div id="price-div-left">Price (item ' + cartData.length + ')</div>',
+                        '<div id="price-div-right">₹' + totalPrice + '</div>',
+                    '</div>',
+                    '<div id="discount-div">',
+                        '<div id="discount-div-left">Discount</div>',
+                        '<div id="discount-div-right">₹' + totalDiscount + '</div>',
+                    '</div>',
+                    '<div id="delivery-charges-div">',
+                        '<div id="delivery-charges-div-left">Delivery Charge</div>',
+                        '<div id="delivery-charges-div-right">₹' + deliveryCharge + '</div>',
+                    '</div>',
+                    '<div id="total-amount-div">',
+                        '<div id="total-amount-div-left">Amount</div>',
+                        '<div id="total-amount-div-right">₹' + (totalPrice-totalDiscount+deliveryCharge) + '</div>',
+                    '</div>',
+                    '<div id="saved-amount">',
+                        '<div>You will save ₹' + (totalDiscount-deliveryCharge) + ' on this order</div>',
+                    '</div>',
+               	'</div>',
+           	'</div>'
+        ].join("\n");
+        $("#cartmodal-block-first-block").append(Price_Details_Block);
+
+		if(totalPrice != 0) {
+        	if(totalDiscount == 0 || totalDiscount < deliveryCharge) {
+            	$("#discount-div").hide();
+            	$("#saved-amount").hide();
+        	}
+
+        	if(deliveryCharge == 0) {
+            	$("#delivery-charges-div-right").text("FREE");
+        	}
+        }
+        else {
+            $("#item-block-second-div").hide();
+            $("button").prop("disabled", true);
+            $("button").css("background-color", "grey");
+        }
+	}
+    else {
+        $(".modal").show();
+        $(".modal::-webkit-scrollbar").css("width", "0");
+        $(".modal-content").css("height", "35px");
+    	$("#cartmodal-message-block").show();
+        $("#cartmodal-message-block-close").hide();
+        $("#cartmodal-message-block").css("background-color", "red");
+        $("#cartmodal-message").text("Cart Is Empty!...");
+    }
+}
+
+$.fn.close = function() {
+    $("#myModal").hide();
+}
+
+$(window).click(function(e) {
+    if(e.target.id == "myModal") {
+    	$("#myModal").hide();
+    }
+});
+
+$.fn.placeOrder = function(customerId) {
+    window.location.href = "${currentPage.getPath @context='uri'}".substr(0, 18) + "/menu/bookworm/order.html?" + customerId;
+}
+
+$.fn.closeCartModalMessageBlock = function() {
+	$("#cartmodal-message-block").hide();
+};
+</script>

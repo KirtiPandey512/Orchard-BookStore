@@ -64,7 +64,7 @@ public class CartDaoImpl implements CartDao {
 				book.setGenre(resultSet.getString(10));
 				resultSet1 = statement1.executeQuery("SELECT * FROM WISHLIST WHERE BOOKID = '" + book.getId() + "' AND CUSTOMER_ID = '" + customerId + "';");
 				if (resultSet1.next())
-					book.setPresentInCart(true);
+					book.setPresentInWishlist(true);
 				
 				cart.setBook(book);
 				cart.setCartQuantity(resultSet.getInt(11));

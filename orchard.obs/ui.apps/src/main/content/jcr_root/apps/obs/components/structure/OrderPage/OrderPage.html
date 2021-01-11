@@ -1,8 +1,3 @@
-<html>
-<head>
-
-<title>
-</title>
 <sly data-sly-use.clientlib="/libs/granite/sightly/templates/clientlib.html"
 data-sly-call="${clientlib.css @ categories='obsCssId.order'}"/>
 
@@ -61,7 +56,7 @@ var disPrice=(item[i].price)-((item[i].price)*(item[i].discount)/100);
 tot=tot+disPrice;
                     var pro_Block = [
                     '<div class="productBlock  clearfix" id="productBlockClearfix">',
-'<div class="productBlock__img">',
+'<div class="productBlock__img" style="display:flex">',
 '<div class="aspectContainer loadingAnimation">',
 '<img src="/content/dam/obs/en/images/books/' + item[i].name + '.jpg" class="img-responsive b-error b-error" alt="Book">',
 '</div>',
@@ -109,7 +104,7 @@ $.fn.placeOrder=function(){
         complete: function(xhr,status){
          var obj = JSON.parse(xhr.responseText);
 var conf=customerId+'&'+obj;
-document.location.href="/content/obs/in/en/menu/bookworm/OrderConfirmation.html?"+conf;
+document.location.href="${currentPage.getPath @context='uri'}/../orderconf.html?"+conf;
 
 
          }
@@ -134,17 +129,14 @@ document.location.href="/content/obs/in/en/menu/bookworm/OrderConfirmation.html?
 
 
 </script>
-
-</head>
 <div class="container">
 <div class="row clearfix">
 <div class="col-lg-8 col-md-7 col-sm-8 clearfix">
 <div class="panel-group accordion_spc" id="accordion_spc">
 
-<div class="col-lg-4 col-md-4 col-sm-4 clearfix" id="sidebar_summary" style="top: 15px;">
+<div class="col-lg-4 col-md-4 col-sm-4 clearfix" id="sidebar_summary" style="top: 60px;">
 
 <div class="or_divider">
-<hr>
 
 <div class="spc_order_summary">
 <div class="font-24 title">Order Summary</div>
@@ -414,13 +406,13 @@ document.location.href="/content/obs/in/en/menu/bookworm/OrderConfirmation.html?
 </div>
 <div id="paymentOptions" class="panel-collapse collapse in" style="display:none">   
  <div class="panel-body">
-       
+
             <div class="chkout_cart_view clearfix">
-			
+
 			<div class="payment_row_view" style="padding: 15px 22px;
     border: 1px solid #ccc;
     margin-bottom: 20px;">
-			
+
             <div class="radio">
   <label><input type="radio" name="optradio" name="paymenttype" id="rdCashOnDevelivery" checked>COD</label>
 </div>
@@ -438,12 +430,11 @@ document.location.href="/content/obs/in/en/menu/bookworm/OrderConfirmation.html?
 
 </div>
 </div>
- 
+
 </div>
 </div>
 
 </div>
 </div>
- 
+
 </div>
-</html>

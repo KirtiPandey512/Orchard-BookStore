@@ -5,7 +5,7 @@
 <sly data-sly-use.sideNavigation="com.orchard.obs.core.models.SideNavigationModel"></sly>
 <div>
 <div class="sideNav-Background">
-	
+
 	<div>
 		<h4><a style="text-decoration:none;color:black;font-family:sans seriff;font-weight: bold;" href="#" onclick="getFilteredBook('genre','all')">CATEGORIES</a></h4>
 			<ul class="sideNav-ul" data-sly-list.bookCategories="${sideNavigation.bookGenres}">
@@ -18,7 +18,7 @@
 			<li class="publisher"><a id="${bookPublishers}" href="#" onclick="getFilteredBook('publisher',this.id)"><img src="/content/dam/obs/en/images/publishers/${bookPublishers}.jpg"></a></li>
 		</ul>
 	</div>
-	
+
 </div>
-	<div style="float:right;width:70%" id="ab"></div>
+	<div style="float:right;width:70%;" id="ab"></div>
 </div>

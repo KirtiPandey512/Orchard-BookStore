@@ -76,8 +76,8 @@ public class WishlistDaoImpl implements WishlistDao {
 			throw new WishlistDaoException(e);
 		}
 		finally {
-//			dbUtil.closeResource(statement);
-//			dbUtil.closeResource(connection);
+			dbUtil.closeResource(statement);
+			dbUtil.closeResource(connection);
 		}
 		return wishlistItems;
 	}

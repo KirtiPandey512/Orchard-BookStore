@@ -1,203 +1,31 @@
 <!--sly data-sly-use.clientLib="/libs/granite/sightly/templates/clientlib.html"></sly>
 <sly data-sly-call="${clientLib.all @ categories='obs.base'}"></sly-->
 
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-<script>
-	$(function() {
-		var customerId = null;
-		var name = "customerId" + "=";
-    	var ca = document.cookie.split(';');
-  		for(var i = 0; i < ca.length; i++) {
-    		var c = ca[i];
-    		while (c.charAt(0) == ' ') {
-      			c = c.substring(1);
-    		}
-    		if (c.indexOf(name) == 0) {
-      			customerId = c.substring(name.length, c.length);
-    		}
-  		}
-
-    	if(customerId != null) {
-    		$(this).fetchWishlistData(customerId);
-    	}
-    	else {
-        	$("#wishlist-message-block").show();
-            $("#close").hide();
-            $("#wishlist-message-block").css("background-color", "red");
-           	$("#message").text("Please Login!...");
-    	}
-	});
-
-	$.fn.fetchWishlistData = function(customerId) {
-		$.ajax({
-			url: '/bin/obs/wishlistservlet',
-		 	type: 'POST',
-            data: {
-            	customerId: customerId,
-                action: "getwishlistdata"
-            },
-		 	complete: function(xhr, status) {
-            	if (status == "success") {
-                	wishlistData = JSON.parse(xhr.responseText);
-                    $(this).loadWishlistData(wishlistData, customerId);
-                }
-                else {
-                	$("#wishlist-message-block").show();
-                	$("#wishlist-message-block").css("background-color", "red");
-            		$("#message").text("something went wrong");
-               	}
-		 	}
-	  	});
-	}
-
-	$.fn.addToCart = function(index, customerId) {
-    	var obj = this;
-    	if($(this).text() == "ADD TO CART") {
-			$.ajax({
-				url: '/bin/obs/wishlistservlet',
-				type: 'POST',
-				data: {
-					bookId: (wishlistData[index].book).id,
-                	customerId: customerId,
-                	action: "addtocart"
-				},
-		 		complete: function(xhr, status) {
-            		if (status == "success") {
-                		if(xhr.responseText > 0) {
-                        	$("#wishlist-message-block").show();
-                			$("#wishlist-message-block").css("background-color", "green");
-            				$("#message").text("Successfully Added To Cart");
-                            $(obj).text("GO TO CART");
-                   		}
-               		}
-                	else {
-                    	$("#wishlist-message-block").show();
-                		$("#wishlist-message-block").css("background-color", "red");
-            			$("#message").text("Failed To Add Book To Cart");
-                	}
-		 		}
-			});
-        }
-        else {
-			window.location = "cart.html";
-        }
-    }
-
-	$.fn.removeWishlistItem = function(index, customerId) {
-		$.ajax({
-			url: '/bin/obs/wishlistservlet',
-			type: 'POST',
-			data: {
-				bookId: (wishlistData[index].book).id,
-                customerId: customerId,
-                action: "removeitem"
-			},
-		 	complete: function(xhr, status) {
-            	if (status == "success") {
-                	if(xhr.responseText > 0) {
-						wishlistData.splice(index, 1);
-                      	$(this).loadWishlistData(wishlistData, customerId);
-                   	}
-               	}
-                else {
-                	$("#wishlist-message-block").show();
-                	$("#wishlist-message-block").css("background-color", "red");
-            		$("#message").text("Failed To Remove Book From Wishlist");
-                }
-		 	}
-		});
-	}
-
-	$.fn.loadWishlistData = function(wishlistData, customerId) {
-   		$("#wishlist-block").empty();
-		if(wishlistData.length != 0) {
-        	$(".modal").css("display", "block");
-        	var totalPrice = 0, totalDiscount = 0, deliveryCharge = 0, totalAmount = 0, totalAmountSaved = 0;
-        	var cartBlock = [
-            	'<div id="header">',
-                	'<div id="label">My Wishlist (' + wishlistData.length + ')</div>',
-                '</div>'
-			].join("\n");
-			$("#wishlist-block").append(cartBlock);
-
-			$.each(wishlistData, function(index, item) {
-            	book = item.book;
-				discountPrice = (((100-book.discount)/100)*book.price*item.cartQuantity);
-                actualPrice = (book.price*item.cartQuantity);
-
-				var Item_Block = [
-					'<div class="item-block">',
-                    	'<div class="item-block-first-div">',
-                        	'<div class="item-image-block">',
-                            	'<img src="/content/dam/obs/en/images/books/' + book.name + '.jpg">',
-                            '</div>',
-                            '<div class="item-detail-block">',
-                                '<div class="item-name">' + book.name + '</div>',
-                                '<div class="language">' + book.language + '</div>',
-                                '<div class="item-price">',
-                                    '<div class="discount-price">₹' + discountPrice + '</div>',
-                                    '<div class="actual-price"><s>₹' + actualPrice + '</s></div>',
-                                    '<div class="discount">' + book.discount + '% Off</div>',
-                                '</div>',
-                                '<div class="item-save-remove">',
-                                	'<div class="item-save-later" id=atc' + index + ' onclick="$(this).addToCart(' + index + ',\'' + customerId + '\')">ADD TO CART</div>',
-                                	'<div class="item-remove" onclick="$(this).removeWishlistItem(' + index + ',\'' + customerId + '\')">REMOVE</div>',
-                            	'</div>',
-                            '</div>',
-                            '<div class="delivery-detail-block">',
-                                '<div class="delivery-detail">Delivery in 3 - 5 days | ₹66</div>',
-                                '<div class="replacement-policy">7 Days Replacement Policy</div>',
-                            '</div>',
-                        '</div>',
-                    '</div>'
-				].join("\n");
-                $("#wishlist-block").append(Item_Block);
-
-                if(book.discount == 0) {
-                	$(".discount").hide();
-                    $(".actual-price").hide();
-                }
-
-                if(book.isPresentInCart) {
-                	$("#atc" + index).text("GO TO CART");
-                }
-			});
-		}
-		else {
-            $("#wishlist-message-block").show();
-            $("#close").hide();
-            $("#wishlist-message-block").css("background-color", "red");
-           	$("#message").text("Wishlist Is Empty!...");
-      	}
-
-		$.fn.closeMessageBlock = function() {
-			$("#wishlist-message-block").hide();
-		};
-	}
-</script>
-
 <div id="wishlist-message-block">
-	<span id="message"></span>
-	<span id="close" onclick="$(this).closeMessageBlock();">&times;</span>
+	<span id="wishlist-message"></span>
+	<span id="wishlist-message-block-close" onclick="$(this).closeMessageBlock();">&times;</span>
 </div>
 <div id="wishlist-block"></div>
 
 <style>
+*{
+	font-family: sans-serif;
+}
 #wishlist-message-block {
 	display: none;
 	background-color: red;
    	padding: 1%;
     text-align: center;
-    margin-bottom: 1%;
+    margin-top: 1%;
     border-radius: 5px;
 }
 
-#message {
+#wishlist-message {
 	color: white;
     font-size: 18px;
 }
 
-#close {
+#wishlist-message-block-close {
 	float: right;
     color: white;
     font-size: 22px;
@@ -208,6 +36,7 @@
 #wishlist-block {
 	width: 80%;
     margin: auto;
+    margin-top: 2%;
 }
 
 #header, .item-block {            
@@ -301,3 +130,176 @@
     color: #388e3c;
 }
 </style>
+
+<script>
+$(function() {
+	var customerId = null;
+	var name = "customerId" + "=";
+    var ca = document.cookie.split(';');
+  	for(var i = 0; i < ca.length; i++) {
+    	var c = ca[i];
+    	while (c.charAt(0) == ' ') {
+      		c = c.substring(1);
+    	}
+    	if (c.indexOf(name) == 0) {
+      		customerId = c.substring(name.length, c.length);
+    	}
+  	}
+
+    if(customerId != null) {
+    	$(this).fetchWishlistData(customerId);
+    }
+    else {
+        $("#wishlist-message-block").show();
+		$("#wishlist-message-block-close").hide();
+		$("#wishlist-message-block").css("background-color", "red");
+        $("#wishlist-message").text("Please Login!...");
+    }
+});
+
+$.fn.fetchWishlistData = function(customerId) {
+	$.ajax({
+		url: '/bin/obs/wishlistservlet',
+		type: 'POST',
+        data: {
+            customerId: customerId,
+            action: "getwishlistdata"
+		},
+		complete: function(xhr, status) {
+            if (status == "success") {
+                wishlistData = JSON.parse(xhr.responseText);
+                $(this).loadWishlistData(wishlistData, customerId);
+			}
+			else {
+                $("#wishlist-message-block").show();
+                $("#wishlist-message-block").css("background-color", "red");
+            	$("#wishlist-message").text("something went wrong");
+			}
+		}
+	});
+}
+
+$.fn.addToCart = function(index, customerId) {
+    var obj = this;
+    if($(this).text() == "ADD TO CART") {
+		$.ajax({
+			url: '/bin/obs/wishlistservlet',
+			type: 'POST',
+			data: {
+				bookId: (wishlistData[index].book).id,
+                customerId: customerId,
+                action: "addtocart"
+			},
+		 	complete: function(xhr, status) {
+            	if (status == "success") {
+                	if(xhr.responseText > 0) {
+                        $("#wishlist-message-block").show();
+                		$("#wishlist-message-block").css("background-color", "green");
+            			$("#wishlist-message").text("Successfully Added To Cart");
+						$(obj).text("GO TO CART");
+                   	}
+               	}
+                else {
+                    $("#wishlist-message-block").show();
+                	$("#wishlist-message-block").css("background-color", "red");
+            		$("#wishlist-message").text("Failed To Add Book To Cart");
+                }
+		 	}
+		});
+	}
+	else {
+        window.location.href = "${currentPage.getPath @context='uri'}" + "/../mycart.html";
+	}
+}
+
+$.fn.removeWishlistItem = function(index, customerId) {
+	$.ajax({
+		url: '/bin/obs/wishlistservlet',
+		type: 'POST',
+		data: {
+			bookId: (wishlistData[index].book).id,
+			customerId: customerId,
+            action: "removeitem"
+		},
+		complete: function(xhr, status) {
+			if (status == "success") {
+				if(xhr.responseText > 0) {
+					wishlistData.splice(index, 1);
+					$(this).loadWishlistData(wishlistData, customerId);
+				}
+            }
+			else {
+                $("#wishlist-message-block").show();
+                $("#wishlist-message-block").css("background-color", "red");
+            	$("#wishlist-message").text("Failed To Remove Book From Wishlist");
+			}
+		}
+	});
+}
+
+$.fn.loadWishlistData = function(wishlistData, customerId) {
+   	$("#wishlist-block").empty();
+	if(wishlistData.length != 0) {
+        var totalPrice = 0, totalDiscount = 0, deliveryCharge = 0, totalAmount = 0, totalAmountSaved = 0;
+        var cartBlock = [
+			'<div id="header">',
+                '<div id="label">My Wishlist (' + wishlistData.length + ')</div>',
+			'</div>'
+		].join("\n");
+		$("#wishlist-block").append(cartBlock);
+
+		$.each(wishlistData, function(index, item) {
+            book = item.book;
+			discountPrice = (((100-book.discount)/100)*book.price*item.cartQuantity);
+			actualPrice = (book.price*item.cartQuantity);
+
+			var Item_Block = [
+				'<div class="item-block">',
+                    '<div class="item-block-first-div">',
+                        '<div class="item-image-block">',
+                            '<img src="/content/dam/obs/en/images/books/' + book.name + '.jpg">',
+                        '</div>',
+                        '<div class="item-detail-block">',
+							'<div class="item-name">' + book.name + '</div>',
+                            '<div class="language">' + book.language + '</div>',
+                            '<div class="item-price">',
+								'<div class="discount-price">₹' + discountPrice + '</div>',
+								'<div class="actual-price"><s>₹' + actualPrice + '</s></div>',
+								'<div class="discount">' + book.discount + '% Off</div>',
+                            '</div>',
+                            '<div class="item-save-remove">',
+                                '<div class="item-save-later" id=atc' + index + ' onclick="$(this).addToCart(' + index + ',\'' + customerId + '\')">ADD TO CART</div>',
+                                '<div class="item-remove" onclick="$(this).removeWishlistItem(' + index + ',\'' + customerId + '\')">REMOVE</div>',
+                            '</div>',
+						'</div>',
+						'<div class="delivery-detail-block">',
+							'<div class="delivery-detail">Delivery in 3 - 5 days</div>',
+							'<div class="replacement-policy">8 Days Replacement Policy</div>',
+						'</div>',
+					'</div>',
+				'</div>'
+			].join("\n");
+			$("#wishlist-block").append(Item_Block);
+
+			if(book.discount == 0) {
+                $(".discount").hide();
+				$(".actual-price").hide();
+			}
+
+            if(book.isPresentInCart) {
+				$("#atc" + index).text("GO TO CART");
+            }
+		});
+	}
+	else {
+        $("#wishlist-message-block").show();
+        $("#wishlist-message-block-close").hide();
+        $("#wishlist-message-block").css("background-color", "red");
+        $("#wishlist-message").text("Wishlist Is Empty!...");
+	}
+
+	$.fn.closeMessageBlock = function() {
+		$("#wishlist-message-block").hide();
+	};
+}
+</script>

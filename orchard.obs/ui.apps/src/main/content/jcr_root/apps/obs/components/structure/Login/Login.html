@@ -4,15 +4,15 @@ data-sly-call="${clientlib.all @ categories='obs.base'}"/>
 <script src='https://kit.fontawesome.com/a076d05399.js'></script>
 
 <div id="row">
-	<form action="/content/obs/in/en.html" method="get" onsubmit="return $(this).validateLoginCredentials()">
+	<form action="${currentPage.getPath @context='uri'}/../../../../en.html" method="get" onsubmit="return $(this).validateLoginCredentials()">
     	<div id="login">
         	<h2 id="logheader">Login</h2>
             <i class="fas fa-user-check"></i><br><br>
             <div id="username">
-                <b>Username:</b><input type="text" class="name" id="name"><span class="underline"></span><br><br>        
+                <b>Username:</b><input type="text" class="lname" id="lname"><br><br>        
             </div>
             <div id="password">
-                <b>Password:</b><input type="text" class="password" id="password1"><span class="underline"></span><br><br>
+                <b>Password:</b><input type="text" class="lpassword" id="lpassword1"><span class="underline"></span><br><br>
             </div>
             <div id="btn">
                 <button id="log-btn"><b>Login</b></button>
@@ -20,31 +20,29 @@ data-sly-call="${clientlib.all @ categories='obs.base'}"/>
             <div id="fgt-pass">
                 <a href="#" class="fgt-text">Forgot Password?</a><br><br>
             </div>
+            <div id="btn" style="margin-left: -5px;">
+                <a href="${currentPage.getPath @context='uri'}/../registration.html" id="log-btn"><b>Sign Up</b></div></a>
+            </div>
 		</div>
 	</form>
-    <center>
-    	<div id="btn">
-        	<a href="/content/obs/in/en/menu/bookworm/registration.html"><button id="reg-btn"><b>Sign Up</b></button></a>
-        </div>
-	</center>
 </div>
-<br><br>
+
 <center><label id="error"></label></center>
 
 <script>
 $.fn.validateLoginCredentials = function() {	  
-	name = $("#name").val();
-    password = $("#password1").val();
+	name = $("#lname").val();
+    password = $("#lpassword1").val();
 
 	if(name == "") { /* || !form.name.value.match(/^([A-Za-z]+\s?){1,3}$/)) { */
-    	$("#name").focus() ;
+    	$("#lname").focus() ;
         $("#error").show();
         $("#error").text("Please provide valid username!");
     	return false;
 	}
 
 	if(password == "") {
-    	$("#password1").focus() ;
+    	$("#lpassword1").focus() ;
         $("#error").show();
         $("#error").text("Please provide valid password!");
     	return false;

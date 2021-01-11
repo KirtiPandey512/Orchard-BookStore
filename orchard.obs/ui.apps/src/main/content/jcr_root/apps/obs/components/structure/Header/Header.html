@@ -1,38 +1,37 @@
 <sly data-sly-use.clientLib="/libs/granite/sightly/templates/clientlib.html"
 data-sly-call="${clientlib.all @ categories='obs.base'}"/>
 
-<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inconsolata">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<!--link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inconsolata">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" -->
 
 <sly data-sly-include="cartmodal.html" data-sly-unwrap></sly>
 <sly data-sly-use.header="com.orchard.obs.core.models.Header"></sly>
-
 <head>
 <div class="head">
-	<img src="/content/dam/obs/en/images/icon.png"  alt="bookstore logo"  id="logo" height=200px width:200px />
+	<img src="/content/dam/obs/en/images/icon.png" alt="bookstore logo" id="logo" />
     <div class="head-right">
 		<ul>
         	<li class="dropdown" data-sly-repeat="${header.pages}">
-            	<a  href="${item.path}.html">${item.title}</a>
+				<a  class="childPage" href="${item.path}.html">${item.title}</a>
              	<ul class="dropdown-content">
-            		<li data-sly-repeat="${item.childPages}">
-				 		<a href="${item.path}.html">${item.title}</a>
+            		<li data-sly-repeat="${item.childPages}" style="z-index: 100;">
+				 		<a class="subChildPage" href="${item.path}.html">${item.title}</a>
              		</li>
              	</ul>
         	</li>
 		</ul>
 	</div>
 
-	<ul>
+	<ul class="navcart">
 		<li class="dropdown">
-    		<!--a href="login.html"--><i class="fa fa-user-circle" style="font-size:30px;" ></i><!--/a-->
+    		<a><i class="fa fa-user-circle" style="font-size:30px;" ></i></a>
       		<ul  class="dropdown-content">
-        		<li><a>Profile</a></li>
-            	<li id="login-btn" onclick="$(this).login()"><a>Login</a></li>
-            	<li id="logout-btn" onclick="$(this).logout()"><a>Logout</a></li>
+        		<li id="profile-button"><a>Profile</a></li>
+            	<li id="login-button" onclick="$(this).login()"><a>Login</a></li>
+            	<li id="logout-button" onclick="$(this).logout()"><a>Logout</a></li>
         	</ul>
 		</li>
-    	<li id="cart" onclick="$(this).cart()"> <!--a href="cart.html"--><i class="fa fa-shopping-cart" style="font-size:30px;" ></i><!--/a--></li>
+    	<a><li class="dropdown" id="cart" onclick="$(this).cart()"><i class="fa fa-shopping-cart" style="font-size:30px;" ></i></a></li>
 	</ul>
 </div>
 </head>
@@ -54,7 +53,7 @@ $(function() {
   	}
 
     $.fn.login = function() {
-    	document.location.href = "/content/obs/in/en/menu/bookworm/login.html";
+    	window.location.href = "${currentPage.getPath @context='uri'}".substr(0, 18) + "/menu/bookworm/login.html";
     }
 
    	$.fn.logout = function() {
@@ -64,19 +63,31 @@ $(function() {
 
 	$.fn.cart = function() {
     	if(customerId == null) {
-        	alert("Please Login!..");
+    		window.location.href = "${currentPage.getPath @context='uri'}".substr(0, 18) + "/menu/bookworm/login.html";
         }
         else
-        	$(this).fetchCartData(customerId);
+        	$(this).fetchCartModalData(customerId);
     }
 
 	if(customerId != null) {
-		$("#login-btn").css("display", "none");
-		$("#logout-btn").css("display", "inline-block");
+		$("#login-button").hide();
+        $("#profile-button").show();
+		$("#logout-button").show();
     }
     else {
-        $("#login-btn").css("display", "inline-block");
-		$("#logout-btn").css("display", "none");
+        $("#login-button").show();
+        $("#profile-button").hide();
+		$("#logout-button").hide();
     }
+
+    $(".childPage").each(function() {
+        var url = "" + $(this).attr("href") + "";
+    	$(this).attr("href", "${currentPage.getPath @context='uri'}".substr(0, 18) + url.substr(18));
+    });
+
+	$(".subChildPage").each(function() {
+        var url = "" + $(this).attr("href") + "";
+    	$(this).attr("href", "${currentPage.getPath @context='uri'}".substr(0, 18) + url.substr(18));
+    });
 });
 </script>

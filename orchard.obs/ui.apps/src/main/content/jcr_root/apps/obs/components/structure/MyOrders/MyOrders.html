@@ -1,14 +1,5 @@
 <html>
-<head>
-
-<!--<sly data-sly-use.clientlib="/libs/granite/sightly/templates/clientlib.html"
-data-sly-call="${clientlib.css @ categories='obsCssId.order'}"/>-->
-</head>
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 <script>
-
-
-
 $(function() {
 		var customerId = null;
 		var name = "customerId" + "=";
@@ -56,7 +47,7 @@ $.fn.MyOrder = function(customerId)  {
          ].join("\n");
 $("#orderDetail").append(order_panel);
          var book=obj[i].books;
-
+		 var orderDetailsUrl = "${currentPage.getPath @context='uri'}/../bookworm/myorderdetails.html?";
          var j=0;
          for(j;j<book.length;j++)
          {
@@ -64,7 +55,7 @@ $("#orderDetail").append(order_panel);
          '<div class="card-section" data-ga-event-category="Card on Home Page" data-ga-event-action="buttonTap" data-ga-event-label=" clicked for Item status - RETURN CREATED">',
             '<div class="item-detail-page">',
                '<div class="order-row-details" data-ga-event-category="Order List" data-ga-event-action="buttonTap" data-ga-event-label="Clicked to open card status - RETURN CREATED">',
-                  '<a href="/content/obs/in/en/menu/bookworm/myorderdetails.html?'+obj[i].myOrderNo+'"><div class="order-col-1 order-img"><img src="/content/dam/obs/en/images/books/' + book[j].name + '.jpg"></div>',
+                  '<a href="' + orderDetailsUrl + obj[i].myOrderNo +'"><div class="order-col-1 order-img"><img src="/content/dam/obs/en/images/books/' + book[j].name + '.jpg"></div>',
                   '<div class="order-col-2">',
                      '<div class="order-status" data-ga-event-category="Order List" data-ga-event-action="buttonTap" data-ga-event-label="Track Item, status - RETURN CREATED">'+book[j].name+'</div>',
                      '<div class="order-details-text"> ₹ '+book[j].price+'</div>',

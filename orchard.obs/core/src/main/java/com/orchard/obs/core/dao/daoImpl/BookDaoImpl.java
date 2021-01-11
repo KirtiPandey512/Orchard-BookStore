@@ -74,6 +74,10 @@ public class BookDaoImpl implements BookDao {
 				resultSet = statement.executeQuery("SELECT * FROM CART WHERE BOOKID = '" + bookId + "' AND CUSTOMER_ID = '" + customerId + "';");
 				if (resultSet.next())
 					book.setPresentInCart(true);
+				
+				resultSet = statement.executeQuery("SELECT * FROM WISHLIST WHERE BOOKID = '" + bookId + "' AND CUSTOMER_ID = '" + customerId + "';");
+				if (resultSet.next())
+					book.setPresentInWishlist(true);
 			} 	
 			return book;
 		} catch (DataSourceNotFoundException | SQLException e) {

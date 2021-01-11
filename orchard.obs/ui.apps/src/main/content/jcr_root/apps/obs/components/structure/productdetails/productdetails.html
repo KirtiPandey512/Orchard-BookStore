@@ -1,22 +1,77 @@
 <!--sly data-sly-use.clientLib="/libs/granite/sightly/templates/clientlib.html"></sly>
 <sly data-sly-call="${clientLib.all @ categories='obs.base'}"></sly-->
 
+<div id="product-details-message-block">
+	<span id="product-details-message"></span>
+	<span id="product-details-message-block-close">&times;</span>
+</div>
+<div id="product-desc">
+    <div id="product-desc-left">
+        <div id="image-block">
+            <center><img id="book-image" width="100px"></center>
+        </div>
+        <div id="buttons-block">
+            <button id="add-to-cart">ADD TO CART</button>
+            <button id="add-to-wishlist">ADD TO WISHLIST</button>
+            <!--button id="buy-now">BUY NOW</button-->
+        </div>
+    </div>
+    <div id="product-desc-right">
+        <div class="product-name"></div>
+        <div class="product-language"></div>
+        <div class="product-price">
+            <div class="discount-price"></div>
+            <div class="actual-price"></div>
+            <div class="discount"></div>
+        </div>
+        <div class="label-value">
+        	<div class="label" id="author-label">Author</div>
+            <div class="value" id="author-value"></div>
+        </div>
+        <div class="label-value">
+            <div class="label" id="highlights-label">Highlights</div>
+            <div class="value" id="highlights-value">
+                <ul>
+                    <li id="language"></li>
+                    <li id="publisher"></li>
+                    <li id="genre"></li>
+                    <li id="isbn"></li>
+                    <li id="pages"></li>
+                </ul>
+            </div>
+            <div class="label" id="services-label">Services</div>
+            <div class="value" id="services-value">
+                <ul>
+                    <li>8 Days Replacement Policy</li>
+                    <li>Cash on Delivery available</li>
+                </ul>
+            </div>
+        </div>
+        <div class="label-value">
+            <div class="label" id="description-label">Description</div>
+            <div class="value" id="description-value"></div>
+        </div>
+    </div>
+</div>
+
+
 <style>
 #product-details-message-block {
 	display: none;
 	background-color: red;
    	padding: 1%;
     text-align: center;
+    margin-top: 1%;
     margin-bottom: 1%;
     border-radius: 5px;
 }
 
-#message {
+#product-details-message {
 	color: white;
     font-size: 18px;
 }
 
-#close {
+#product-details-message-block-close {
 	float: right;
     color: white;
     font-size: 22px;
@@ -28,6 +83,7 @@
     display: flex;
     margin-left: 5%;
     margin-right: 5%;
+    margin-top: 1%;
     border: 1px solid lightgrey;
     line-height: 1.8;
 }
@@ -120,66 +176,12 @@
 }
 </style>
 
-<div id="product-details-message-block">
-	<span id="message"></span>
-	<span id="close">&times;</span>
-</div>
-<div id="product-desc">
-    <div id="product-desc-left">
-        <div id="image-block">
-            <center><img id="book-image" width="100px"></center>
-        </div>
-        <div id="buttons-block">
-            <button id="add-to-cart">ADD TO CART</button>
-            <!--button id="add-to-wishlist">ADD TO WISHLIST</button-->
-            <button id="buy-now">BUY NOW</button>
-        </div>
-    </div>
-    <div id="product-desc-right">
-        <div class="product-name"></div>
-        <div class="product-language"></div>
-        <div class="product-price">
-            <div class="discount-price"></div>
-            <div class="actual-price"></div>
-            <div class="discount"></div>
-        </div>
-        <div class="label-value">
-        	<div class="label" id="author-label">Author</div>
-            <div class="value" id="author-value"></div>
-        </div>
-        <div class="label-value">
-            <div class="label" id="highlights-label">Highlights</div>
-            <div class="value" id="highlights-value">
-                <ul>
-                    <li id="language"></li>
-                    <li id="publisher"></li>
-                    <li id="genre"></li>
-                    <li id="isbn"></li>
-                    <li id="pages"></li>
-                </ul>
-            </div>
-            <div class="label" id="services-label">Services</div>
-            <div class="value" id="services-value">
-                <ul>
-                    <li>7 Days Replacement Policy</li>
-                    <li>Cash on Delivery available</li>
-                </ul>
-            </div>
-        </div>
-        <div class="label-value">
-            <div class="label" id="description-label">Description</div>
-            <div class="value" id="description-value"></div>
-        </div>
-    </div>
-</div>
-
 <script>
 $(function() {
 	const params = new URLSearchParams(window.location.search);
 	bookId = params.get('bookId');
 
 	if(bookId != null) {
-
 		var customerId = null;
 		var name = "customerId" + "=";
     	var ca = document.cookie.split(';');
@@ -222,9 +224,15 @@ $(function() {
                     if(bookData.isPresentInCart) {
                     	$("#add-to-cart").text("GO TO CART");
                     }
+
+                    if(bookData.isPresentInWishlist) {
+                    	$("#add-to-wishlist").text("GO TO WISHLIST");
+                    }
            		}
             	else {
-            		alert("Error");
+            		$("#product-details-message-block").show();
+                	$("#product-details-message-block").css("background-color", "red");
+            		$("#product-details-message").text("Something Went Wrong");
 
             	}
 			}
@@ -246,67 +254,71 @@ $(function() {
                 				if(xhr.responseText > 0) {
                                 	$("#product-details-message-block").show();
                 					$("#product-details-message-block").css("background-color", "green");
-            						$("#message").text("Successfully Added To Cart");
+            						$("#product-details-message").text("Successfully Added To Cart");
                                     $("#add-to-cart").text("GO TO CART");
                    				}
                				}
                 			else {
                             	$("#product-details-message-block").show();
                 				$("#product-details-message-block").css("background-color", "red");
-            					$("#message").text("Failed To Add Book To Cart");
+            					$("#product-details-message").text("Failed To Add Book To Cart");
                 			}
 		 				}
 					});
                 }
                 else {
-					window.location = "cart.html";
+        			window.location.href = "${currentPage.getPath @context='uri'}" + "/../../mycart.html";
                 }
             }
             else {
             	$("#product-details-message-block").show();
                 $("#product-details-message-block").css("background-color", "red");
-            	$("#message").text("Please Login To Add Book To Cart!...");
+            	$("#product-details-message").text("Please Login To Add Book To Cart!...");
             }
 		});
 
-		/* $("#add-to-cart").click(function() {
-        	if(customerId != null) {
-            	if($("#add-to-cart").text() == "ADD TO CART") {
+        $("#add-to-wishlist").click(function() {
+			if(customerId != null) {
+    			if($(this).text() == "ADD TO WISHLIST") {
 					$.ajax({
-						url: '/bin/obs/bookservlet',
+						url: '/bin/obs/cartservlet',
 						type: 'POST',
 						data: {
 							bookId: bookData.id,
                 			customerId: customerId,
-                			action: "addtocart"
+            				action: "addtowishlist"
 						},
-		 				complete: function(xhr, status) {
-            				if (status == "success") {
-                				if(xhr.responseText > 0) {
+						complete: function(xhr, status) {
+        					if (status == "success") {
+            					if(xhr.responseText > 0) {
                                 	$("#product-details-message-block").show();
                 					$("#product-details-message-block").css("background-color", "green");
-            						$("#message").text("Successfully Added To Cart");
-                                    $("#add-to-cart").text("GO TO CART");
-                   				}
-               				}
-                			else {
+            						$("#product-details-message").text("Successfully Saved To Wishlist");
+                        			$("#add-to-wishlist").text("GO TO WISHLIST");
+                				}
+                    			else {
+                                	$("#product-details-message-block").show();
+               						$("#product-details-message-block").css("background-color", "red");
+            						$("#product-details-message").text("Failed To Add Book To Wishlist");
+                				}
+           					}
+            				else {
                             	$("#product-details-message-block").show();
                 				$("#product-details-message-block").css("background-color", "red");
-            					$("#message").text("Failed To Add Book To Cart");
-                			}
-		 				}
+            					$("#product-details-message").text("something went wrong");
+          					}
+						}
 					});
-                }
-                else {
-					window.location = "cart.html";
-                }
+    			} else {
+		 			window.location.href = "${currentPage.getPath @context='uri'}" + "/../../mywishlist.html";
+   				}
             }
-            else {
+			else {
             	$("#product-details-message-block").show();
                 $("#product-details-message-block").css("background-color", "red");
-            	$("#message").text("Please Login To Add Book To Cart!...");
+            	$("#product-details-message").text("Please Login To Add Book To Cart!...");
             }
-		}); */
+		});
 
     	$("#buy-now").click(function() {
         	if(customerId != null) {
@@ -315,19 +327,19 @@ $(function() {
             else {
                 $("#product-details-message-block").show();
                 $("#product-details-message-block").css("background-color", "red");
-            	$("#message").text("Please Login To Buy Book!...");
+            	$("#product-details-message").text("Please Login To Buy Book!...");
             }
 		});
 
-        $("#close").click(function() {
+        $("#product-details-message-block-close").click(function() {
         	$("#product-details-message-block").hide();
         });
 	}
     else {
     	$("#product-details-message-block").show();
-        $("#close").hide();
+        $("#product-details-message-block-close").hide();
         $("#product-desc").hide();
-    	$("#message").text("No Page Found...");
+    	$("#product-details-message").text("No Page Found...");
     }
 });
 </script>

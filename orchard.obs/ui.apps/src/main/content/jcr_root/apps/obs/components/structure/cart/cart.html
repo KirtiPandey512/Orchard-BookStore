@@ -1,13 +1,6 @@
 <!--sly data-sly-use.clientLib="/libs/granite/sightly/templates/clientlib.html"></sly>
 <sly data-sly-call="${clientlib.all @ categories='obs.base'}"></sly-->
 
-<div id="cart-message-block">
-	<span id="message"></span>
-	<span id="close" onclick="$(this).closeMessageBlock();">&times;</span>
-</div>
-<div id="cart-block"></div>
-
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 <script>
 $(function() {
 	var customerId = null;
@@ -29,9 +22,9 @@ $(function() {
     }
     else {
     	$("#cart-message-block").show();
-        $("#close").hide();
+        $("#cart-message-block-close").hide();
         $("#cart-message-block").css("background-color", "red");
-        $("#message").text("Please Login!...");
+        $("#cart-message").text("Please Login!...");
     }
 });
 
@@ -51,7 +44,7 @@ $(function() {
                 else {
                 	$("#cart-message-block").show();
                 	$("#cart-message-block").css("background-color", "red");
-            		$("#message").text("something went wrong");
+            		$("#cart-message").text("something went wrong");
                	}
 		 	}
 	  	});
@@ -77,7 +70,7 @@ $(function() {
                 else {
                 	$("#cart-message-block").show();
                 	$("#cart-message-block").css("background-color", "red");
-            		$("#message").text("something went wrong");
+            		$("#cart-message").text("something went wrong");
                	}
 		 	}
 		});
@@ -99,26 +92,26 @@ $(function() {
             			if(xhr.responseText > 0) {
                 			$("#cart-message-block").show();
         					$("#cart-message-block").css("background-color", "green");
-        					$("#message").text("Successfully Saved To Wishlist");
+        					$("#cart-message").text("Successfully Saved To Wishlist");
                         	$(obj).text("GO TO WISHLIST");
                 		}
                     	else {
                     		$("#cart-message-block").show();
                 			$("#cart-message-block").css("background-color", "red");
-            				$("#message").text("Failed To Add Book To Wishlist");
+            				$("#cart-message").text("Failed To Add Book To Wishlist");
                 		}
            			}
             		else {
             			$("#cart-message-block").show();
                 		$("#cart-message-block").css("background-color", "red");
-            			$("#message").text("something went wrong");
+            			$("#cart-message").text("something went wrong");
           			}
 				}
 			});
     	} else {
-		window.location = "wishlist.html";
-   	}
-}
+		 	window.location.href = "${currentPage.getPath @context='uri'}" + "/../mywishlist.html";
+   		}
+	}
 
 	$.fn.removeCartItem = function(index, customerId) {
 		$.ajax({
@@ -139,7 +132,7 @@ $(function() {
                 else {
                 	$("#cart-message-block").show();
                 	$("#cart-message-block").css("background-color", "red");
-            		$("#message").text("something went wrong");
+            		$("#cart-message").text("something went wrong");
                	}
 		 	}
 		});
@@ -148,7 +141,6 @@ $(function() {
 	$.fn.loadCartData = function(cartData, customerId) {
    		$("#cart-block").empty();
 		if(cartData.length != 0) {
-        	$(".modal").css("display", "block");
         	var totalPrice = 0, totalDiscount = 0, deliveryCharge = 0, totalAmount = 0, totalAmountSaved = 0;
         	var cartBlock = [
             	'<div id="cart-block-first-block">',
@@ -182,8 +174,8 @@ $(function() {
                                 	'</div>',
                             	'</div>',
                             	'<div class="delivery-detail-block">',
-                                	'<div class="delivery-detail">Delivery in 3 - 5 days | ₹66</div>',
-                                	'<div class="replacement-policy">7 Days Replacement Policy</div>',
+                                	'<div class="delivery-detail">Delivery in 3 - 5 days</div>',
+                                	'<div class="replacement-policy">8 Days Replacement Policy</div>',
                             	'</div>',
                         	'</div>',
                         	'<div class="item-block-second-div">',
@@ -213,7 +205,7 @@ $(function() {
                     $(".actual-price").hide();
                 }
 
-                if(book.isPresentInCart) {
+                if(book.isPresentInWishlist) {
                 	$("#atc" + index).text("GO TO WISHLIST");
                 }
 			});
@@ -273,18 +265,28 @@ $(function() {
             $("button").css("background-color", "grey");
         }
 		}
-    	else
-    		$("#cart-block").html("<h3>Cart Is Empty!...</h3>");
+    	else {
+    		$("#cart-message-block").show();
+        	$("#cart-message-block-close").hide();
+            $("#cart-message-block").css("background-color", "red");
+           	$("#cart-message").text("Cart Is Empty!...");
+    	}
 	}
 
     $.fn.placeOrder = function(customerId) {
-    window.location = "/content/obs/in/en/menu/bookworm/order.html?" + customerId;
-}
+    	window.location.href = "${currentPage.getPath @context='uri'}" + "/../bookworm/order.html?" + customerId;
+	}
 
-    $.fn.closeMessageBlock = function() {
+    $.fn.closeCartMessageBlock = function() {
 		$("#cart-message-block").hide();
 	};
 </script>
+
+<div id="cart-message-block">
+	<span id="cart-message"></span>
+	<span id="cart-message-block-close" onclick="$(this).closeCartMessageBlock();">&times;</span>
+</div>
+<div id="cart-block"></div>
 
 <style>
 #cart-message-block {
@@ -292,16 +294,16 @@ $(function() {
 	background-color: red;
    	padding: 1%;
     text-align: center;
-    margin-bottom: 1%;
+    margin-top: 1%;
     border-radius: 5px;
 }
 
-#message {
+#cart-message {
 	color: white;
     font-size: 18px;
 }
 
-#close {
+#cart-message-block-close {
 	float: right;
     color: white;
     font-size: 22px;
@@ -313,6 +315,7 @@ $(function() {
 	display: flex;
     width: 80%;
     margin: auto;
+    margin-top: 2%;
 }
 
 #cart-block-first-block {
