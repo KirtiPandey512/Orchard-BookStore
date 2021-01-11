@@ -27,8 +27,22 @@ function deleteCookie(name){
 }
 function getFilteredBook(name, filter) {
 	
+	var customerId = null;
+	var namee = "customerId" + "=";
+	var ca = document.cookie.split(';');
+
+		for(var i = 0; i < ca.length; i++) {
+		var c = ca[i];
+		while (c.charAt(0) == ' ') {
+  			c = c.substring(1);
+		}
+		if (c.indexOf(namee) == 0) {
+  			customerId = c.substring(namee.length, c.length);
+		}
+		}
+	
 	if (filter.localeCompare("all")==0){
-		url = "/bin/FilterBookServlet?first=" + name + "&second=" + filter;
+		url = "/bin/FilterBookServlet?first=" + name + "&second=" + filter+"&customerId="+customerId;
 		deleteCookie('customObject');
 	}
 	if (filter.localeCompare("all")!=0) {
@@ -36,19 +50,19 @@ function getFilteredBook(name, filter) {
 		var customObject = JSON.parse(json);
 		setCookie(name, filter);
 		if ((customObject) === null) {
-			url = "/bin/FilterBookServlet?first=" + name + "&second=" + filter;
+			url = "/bin/FilterBookServlet?first=" + name + "&second=" + filter+"&customerId="+customerId;
 		} else if ((customObject.first).localeCompare("genre")
 				&& (name.localeCompare("genre"))) {
-			url = "/bin/FilterBookServlet?first=" + name + "&second=" + filter;
+			url = "/bin/FilterBookServlet?first=" + name + "&second=" + filter+"&customerId="+customerId;
 		} else if ((customObject.first).localeCompare("publisher")
 				&& (name.localeCompare("publisher"))) {
-			url = "/bin/FilterBookServlet?first=" + name + "&second=" + filter;
+			url = "/bin/FilterBookServlet?first=" + name + "&second=" + filter+"&customerId="+customerId;
 		} else if (name.localeCompare("genre")) {
 			url = "/bin/FilterBookServlet?first=" + customObject.second
-					+ "&second=" + filter;
+					+ "&second=" + filter+"&customerId="+customerId;
 		} else if (name.localeCompare("publisher")) {
 			url = "/bin/FilterBookServlet?first=" + filter + "&second="
-					+ customObject.second;
+					+ customObject.second+"&customerId="+customerId;
 		}
 	}
 	var xhttp = new XMLHttpRequest();
@@ -73,8 +87,15 @@ function generateTiles(data) {
 				'<img src="/content/dam/obs/en/images/books/',data[x].name,'.jpg">',
 				'</div>',
 				'<div class="hover-block">',
-				'<button onclick="addToCartFromPLP(',data[x].id,')" class="add-to-cart">ADD TO CART</button>',
-				'<a href="/content/obs/india/english/menu/bookworm/productdetail.html?bookId=',data[x].id,'"><button class="view-detail">VIEW DETAILS</button></a>',
+				'<button class="add-to-cart"',"id=",data[x].id,'onclick="addToCartFromPLP(',data[x].id,')">'].join("\n");
+        if(data[x].isPresentInCart){
+            html+="GO TO CART";}
+        else{
+
+                html+="ADD TO CART";
+            }
+
+				html += ['</button><a href="/content/obs/in/en/menu/bookworm/productdetail.html?bookId=',data[x].id,'"><button class="view-detail">VIEW DETAILS</button></a>',
 				'</div>'].join("\n");
         if(data[x].isBestSeller){
 				html+='<div class="bestseller-label"><img src="https://www.sapnaonline.com/static/images/sapna/bestseller.svg"></div>';
@@ -111,19 +132,21 @@ function addToCartFromPLP(bookId){
     		}
   		}
     if(customerId != null) {
-
+        if(document.getElementById(bookId).textContent=="ADD TO CART"){
 	url = "/bin/obs/bookservlet?bookId=" + bookId + "&action=addtocart&customerId=" +customerId;
 
     var xhttp = new XMLHttpRequest();
 	xhttp.onreadystatechange = function() {
 		if (this.readyState == 4 && this.status == 200) {
-
+				document.getElementById(bookId).textContent="GO TO CART";
 
 		}
 	};
 	xhttp.open("POST", url, true);
-	xhttp.send();}
+            xhttp.send();}else{
+                window.location="/content/obs/in/en/menu/mycart.html";
+            }}
     else{
-        window.location="/content/obs/india/english/menu/bookworm/login.html";
+        window.location="/content/obs/in/en/menu/bookworm/login.html";
     }
 }
